@@ -1,0 +1,31 @@
+version: "3"
+services:
+  envoy:
+    image: envoyproxy/envoy:v1.32.0
+    volumes:
+      - ./envoy.yaml:/etc/envoy.yaml
+    ports:
+      - "8080:8080"
+      - "9901:9901"
+    command:
+      [
+        "-c",
+        "/etc/envoy.yaml",
+        "--service-cluster",
+        "front-proxy",
+        "--log-level",
+        "debug",
+      ]
+  backend:
+    image: node:18.16
+    volumes:
+      - .:/api
+    working_dir: /api
+    command: >
+      bash -c "npm install && 
+      npm run start:backend"
+    ports:
+      - "5000:5000"
+    tty: true
+    env_file:
+      - ./env/.env.dev
